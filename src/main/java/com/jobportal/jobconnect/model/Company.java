@@ -12,7 +12,7 @@ public class Company {
     private int id;
 
     @NotBlank(message = "Company naam zaroori hai!")
-    private String naam;
+    private String Name;
 
     @NotBlank(message = "Description zaroori hai!")
     @Size(min = 10, message = "Thodi zyada description do!")
