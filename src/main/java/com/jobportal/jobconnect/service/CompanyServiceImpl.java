@@ -4,6 +4,7 @@ import com.jobportal.jobconnect.dto.request.CreateCompanyDTO;
 import com.jobportal.jobconnect.dto.response.CompanyResponseDTO;
 import com.jobportal.jobconnect.exception.ResourceNotFoundException;
 import com.jobportal.jobconnect.model.Company;
+import com.jobportal.jobconnect.repository.CompanyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,11 @@ public class CompanyServiceImpl implements CompanyService{
     @Autowired
     private ModelMapper modelMapper;
 
-    private List<Company>companies = new ArrayList<>();
-    private int nextId=1;
+   // private List<Company>companies = new ArrayList<>();
+
+    @Autowired
+    private CompanyRepository companyRepository;
+    //private int nextId=1;
 
     @Override
     public CompanyResponseDTO create(CreateCompanyDTO requestDTO, int recruiterId) {
@@ -30,11 +34,10 @@ public class CompanyServiceImpl implements CompanyService{
 
         Company company =modelMapper.map(requestDTO,Company.class);
         company.setRecruiterId(recruiterId);
-        company.setId(nextId++);
         company.setCreatedAt(LocalDateTime.now().toString());
 
-        companies.add(company);
-        log.info("Company is added with name {}",company.getName());
+        Company savedcompany=companyRepository.save(company);
+        log.info("Company is added with name {}",savedcompany.getName());
 
         return modelMapper.map(company,CompanyResponseDTO.class);
     }
@@ -48,17 +51,16 @@ public class CompanyServiceImpl implements CompanyService{
 
     private Company findById(int id) {
 
-        return companies.stream().filter(u->u.getId()==id)
-                .findFirst()
-                .orElseThrow(()->new ResourceNotFoundException("Comapny does not exists with this id {}",id));
+        return companyRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Comany",id));
 
     }
 
     @Override
     public List<CompanyResponseDTO> getAll() {
 
-        log.info("Fetching all companies, count: {}", companies.size());
-        return companies.stream().map(c->modelMapper.map(c,CompanyResponseDTO.class))
+
+        return companyRepository.findAll().stream()
+                .map(u->modelMapper.map(u,CompanyResponseDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -67,10 +69,11 @@ public class CompanyServiceImpl implements CompanyService{
         log.info("Searching companies - name: {}, city: {}, industry: {}",
                 name, city, industry);
 
-        return companies.stream()
-                .filter(c ->name == null ||
-                c.getName().toLowerCase().contains(name.toLowerCase()))
-                .filter(c-> city==null ||
+        return companyRepository.findAll().stream()
+                .filter(c -> name == null ||
+                        c.getName().toLowerCase()
+                                .contains(name.toLowerCase()))
+                .filter(c->name ==null ||
                         c.getCity().equalsIgnoreCase(city))
                 .filter(c->industry ==null ||
                         c.getIndustry().equalsIgnoreCase(industry))
@@ -82,8 +85,8 @@ public class CompanyServiceImpl implements CompanyService{
     public List<CompanyResponseDTO> getByRecruiterId(int recruiterId) {
 
 
-        return companies.stream().filter(c->c.getRecruiterId()==recruiterId)
-                .map(c->modelMapper.map(c,CompanyResponseDTO.class))
+        return companyRepository.findByRecruiterId(recruiterId).stream()
+                .map(u->modelMapper.map(u,CompanyResponseDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -99,15 +102,17 @@ public class CompanyServiceImpl implements CompanyService{
         if (updateDTO.getEmail()       != null) company.setEmail(updateDTO.getEmail());
         if (updateDTO.getPhone()       != null) company.setPhone(updateDTO.getPhone());
 
+        Company savedcompany =companyRepository.save(company);
         log.info("Company updated with id: {}", id);
-        return modelMapper.map(company, CompanyResponseDTO.class);
+        return modelMapper.map(savedcompany, CompanyResponseDTO.class);
 
     }
 
     @Override
     public void delete(int id) {
-        Company company = findById(id);
-        companies.remove(company);
+        Company company = findById(
+                id);
+        companyRepository.delete(company);
         log.info("Company deleted with id: {}", id);
 
     }

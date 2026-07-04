@@ -6,6 +6,7 @@ import com.jobportal.jobconnect.enums.ApplicationStatus;
 import com.jobportal.jobconnect.exception.BadRequestException;
 import com.jobportal.jobconnect.exception.ResourceNotFoundException;
 import com.jobportal.jobconnect.model.JobApplication;
+import com.jobportal.jobconnect.repository.ApplicationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,31 +23,34 @@ import java.util.stream.Collectors;
 public class ApplicationServiceImpl implements ApplicationService{
 
     @Autowired
-            private ModelMapper modelMapper;
+    private ModelMapper modelMapper;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
+
     List<JobApplication> jobApplications=new ArrayList<>();
     private int nextId=1;
     @Override
     public ApplicationResponseDTO apply(CreateApplicationDTO requestDTO) {
 
-        boolean check =jobApplications.stream().anyMatch(c->c.getApplicantId()== requestDTO.getApplicantId() &&
-                                                         c.getJobId() == requestDTO.getJobId());
 
-        if(check)
+
+        if(applicationRepository.existsByJobIdAndApplicantId(requestDTO.getJobId(), requestDTO.getApplicantId()))
         {
             throw new BadRequestException("You have already applied for this job");
         }
         JobApplication jobApplication=modelMapper.map(requestDTO,JobApplication.class);
 
-        jobApplication.setApplicantId(nextId);
+
         jobApplication.setAppliedAt(LocalDateTime.now().toString());
         jobApplication.setStatus(ApplicationStatus.APPLIED);
         jobApplication.setUpdatedAt(LocalDateTime.now().toString());
-        jobApplications.add(jobApplication);
+        JobApplication savedjobApplication = applicationRepository.save(jobApplication);
 
         log.info("New application submitted - jobId: {}, applicantId: {}",
                 requestDTO.getJobId(), requestDTO.getApplicantId());
 
-        return modelMapper.map(jobApplication,ApplicationResponseDTO.class);
+        return modelMapper.map(savedjobApplication,ApplicationResponseDTO.class);
     }
 
     @Override
@@ -58,9 +62,8 @@ public class ApplicationServiceImpl implements ApplicationService{
     }
 
     private JobApplication findApplicationById(int id) {
-        return jobApplications.stream()
-                .filter(a -> a.getId() == id)
-                .findFirst()
+
+        return applicationRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Application", id));
     }
@@ -68,16 +71,16 @@ public class ApplicationServiceImpl implements ApplicationService{
     @Override
     public List<ApplicationResponseDTO> getByJobId(int jobId) {
 
-        return jobApplications.stream().filter(c->c.getJobId()==jobId).map(c->
-                        modelMapper.map(c,ApplicationResponseDTO.class))
+        return applicationRepository.findByJobId(jobId).stream().
+
+                map(c->modelMapper.map(c,ApplicationResponseDTO.class))
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<ApplicationResponseDTO> getByApplicantId(int applicantId) {
-        return jobApplications.stream().filter(
-                c->c.getApplicantId()==applicantId
-        ).map(c->modelMapper.map(c,ApplicationResponseDTO.class))
+        return applicationRepository.findByApplicantId(applicantId).stream()
+        .map(c->modelMapper.map(c,ApplicationResponseDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -87,14 +90,16 @@ public class ApplicationServiceImpl implements ApplicationService{
         JobApplication jobApplication=findApplicationById(id);
         jobApplication.setStatus(status);
         jobApplication.setUpdatedAt(LocalDateTime.now().toString());
+
+        JobApplication savedjobApplication =applicationRepository.save(jobApplication);
         log.info("Application status updated - id: {}, status: {}", id, status);
-        return modelMapper.map(jobApplication,ApplicationResponseDTO.class);
+        return modelMapper.map(savedjobApplication,ApplicationResponseDTO.class);
     }
 
     @Override
     public void withdraw(int id) {
         JobApplication application = findApplicationById(id);
-        jobApplications.remove(application);
+        applicationRepository.delete(application);
         log.info("Application withdrawn - id: {}", id);
     }
 }
