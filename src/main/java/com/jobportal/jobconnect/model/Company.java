@@ -18,7 +18,7 @@ public class Company {
 
     @NotBlank(message = "Company naam zaroori hai!")
     @Column(nullable = false)
-    private String Name;
+    private String name;
 
     @NotBlank(message = "Description is required!")
     @Size(min = 10, message = "Please provide a more detailed description!!")

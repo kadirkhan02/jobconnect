@@ -8,6 +8,10 @@ import com.jobportal.jobconnect.service.JobService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,11 +38,22 @@ public class JobController {
 
     // GET /api/v1/jobs - Get all active jobs
     @GetMapping
-    public ResponseEntity<ApiResponse<List<JobResponseDTO>>> getAll() {
+    public ResponseEntity<ApiResponse<Page<JobResponseDTO>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        Sort.Direction dir=direction.equalsIgnoreCase("asc")?
+                Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable= PageRequest.of(page,size,Sort.by(dir,sort));
+
         log.info("Fetching all jobs");
-        List<JobResponseDTO> jobs = jobService.getAll();
+        Page<JobResponseDTO> jobs = jobService.getAll(pageable);
+
         return ResponseEntity.ok(
-                ApiResponse.success(jobs, jobs.size() + " jobs found!"));
+                ApiResponse.success(jobs," jobs found!"));
     }
 
     // GET /api/v1/jobs/{id} - Get job by id

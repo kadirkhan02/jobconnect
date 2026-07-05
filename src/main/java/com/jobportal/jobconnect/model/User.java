@@ -2,10 +2,7 @@ package com.jobportal.jobconnect.model;
 
 import com.jobportal.jobconnect.enums.UserRole;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,7 +40,7 @@ public class User {
     @Column(nullable = false)
     private String CreatedAt;
 
-    @NotBlank(message = "Required")
+    @NotNull(message = "Required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;

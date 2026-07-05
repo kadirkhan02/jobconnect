@@ -10,6 +10,7 @@ import com.jobportal.jobconnect.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
@@ -28,6 +29,10 @@ public class UserServiceImpl implements  UserService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     //private List<User> users = new ArrayList<>();
     private int nextId = 1;
 
@@ -39,6 +44,9 @@ public class UserServiceImpl implements  UserService{
             throw new DuplicateEmailException(requestDTO.getEmail());}
 
         User user =modelMapper.map(requestDTO,User.class);
+
+        user.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
+
         user.setActive(true);
         user.setCreatedAt(LocalDateTime.now().toString());
 

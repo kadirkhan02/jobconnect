@@ -10,9 +10,10 @@ import java.util.List;
 public interface CompanyRepository extends JpaRepository<Company,Integer> {
 
     List<Company> findByRecruiterId(int recruiterId);
-    List<Company> findByNameContainingIgnoreCase(String name);
 
-    // Search by city
+    List<Company> findByNameContainingIgnoreCase(String Name);
+
+
     List<Company> findByCityIgnoreCase(String city);
 
     // Search by industry

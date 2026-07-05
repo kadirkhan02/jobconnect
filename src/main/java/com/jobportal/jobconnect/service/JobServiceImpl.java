@@ -9,6 +9,8 @@ import com.jobportal.jobconnect.repository.JobRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -49,11 +51,10 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public List<JobResponseDTO> getAll() {
+    public Page<JobResponseDTO> getAll(Pageable pageable) {
         log.info("Fetching all active jobs");
-        return jobRepository.findAll().stream()
-                .map(j -> modelMapper.map(j, JobResponseDTO.class))
-                .collect(Collectors.toList());
+        return jobRepository.findByActiveTrue(pageable)
+                .map(job->modelMapper.map(job,JobResponseDTO.class));
     }
 
     @Override

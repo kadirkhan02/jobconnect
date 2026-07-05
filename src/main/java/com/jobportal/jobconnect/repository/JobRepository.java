@@ -2,6 +2,8 @@ package com.jobportal.jobconnect.repository;
 
 import com.jobportal.jobconnect.enums.JobType;
 import com.jobportal.jobconnect.model.Job;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,18 +15,21 @@ import java.util.List;
 public interface JobRepository extends JpaRepository<Job, Integer> {
 
 
-    List<Job> findByActiveTrue();
+    Page<Job> findByActiveTrue(Pageable pageable);
 
+    List<Job> findByActiveTrue();
     List<Job> findByCompanyId(int companyId);
 
     List<Job> findByPostedById(int postedById);
 
-    @Query("SELECT j FROM Job j where j.active=true"+
-    "AND (:title IS NULL OR LOWER(.j.title) LIKE LOWER((CONCAT('%',:title,'%')))"+
-    "AND (:location IS NULL OR LOWER(j.location)==LOWER(:location)"+
-                  "AND (:jobType IS NULL OR j.jobType = :jobType) " +
-                  "AND (:experience IS NULL OR LOWER(j.experience) = LOWER(:experience))"
-    )
+    @Query("""
+        SELECT j FROM Job j
+        WHERE j.active = true
+        AND (:title IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :title, '%')))
+        AND (:location IS NULL OR LOWER(j.location) = LOWER(:location))
+        AND (:jobType IS NULL OR j.jobType = :jobType)
+        AND (:experience IS NULL OR LOWER(j.experience) = LOWER(:experience))
+        """)
     List<Job> searchJobs(
             @Param("title") String title,
             @Param("location") String location,
