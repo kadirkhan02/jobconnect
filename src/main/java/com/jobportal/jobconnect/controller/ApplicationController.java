@@ -24,10 +24,11 @@ public class ApplicationController {
     // POST /api/v1/applications - Apply for a job
     @PostMapping
     public ResponseEntity<ApiResponse<ApplicationResponseDTO>> apply(
-            @Valid @RequestBody CreateApplicationDTO requestDTO) {
+            @Valid @RequestBody CreateApplicationDTO requestDTO,
+            @RequestParam int applicantId) {
         log.info("New application - jobId: {}, applicantId: {}",
-                requestDTO.getJobId(), requestDTO.getApplicantId());
-        ApplicationResponseDTO response = applicationService.apply(requestDTO);
+                requestDTO.getJobId(),applicantId);
+        ApplicationResponseDTO response = applicationService.apply(requestDTO,applicantId);
         return ResponseEntity.status(201)
                 .body(ApiResponse.created(response,
                         "Application submitted successfully!"));

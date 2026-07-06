@@ -71,10 +71,12 @@ public class JobController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) JobType jobType,
-            @RequestParam(required = false) String experience) {
+            @RequestParam(required = false) String experience,
+            @RequestParam(required = false) Double minSalary,
+            @RequestParam(required = false) Double maxSalary){
         log.info("Searching jobs");
         List<JobResponseDTO> results = jobService.search(
-                title, location, jobType, experience);
+                title, location, jobType, experience,minSalary,maxSalary);
         return ResponseEntity.ok(
                 ApiResponse.success(results, results.size() + " jobs found!"));
     }

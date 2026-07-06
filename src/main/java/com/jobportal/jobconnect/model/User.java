@@ -3,10 +3,9 @@ package com.jobportal.jobconnect.model;
 import com.jobportal.jobconnect.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -14,11 +13,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name= "users")
+@ToString(exclude = {"companies", "applications"})
+@EqualsAndHashCode(exclude = {"companies", "applications"})
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int ID;
+    private int id;
 
     @NotBlank(message = "Name is required")
     @Size(min = 4,max = 100,message = "Between 2-100 character required")
@@ -37,7 +38,7 @@ public class User {
 
     @Pattern(regexp = "^[0-9]{10}",message = "required 10 numbers")
     private String Phone;
-    @Column(nullable = false)
+    @Column(updatable = false)
     private String CreatedAt;
 
     @NotNull(message = "Required")
@@ -50,4 +51,12 @@ public class User {
     private String skills;
     @Column(nullable = false)
     private boolean active = true;
+
+    @OneToMany(mappedBy = "recruiter", fetch = FetchType.LAZY)
+    private List<Company> companies;
+
+    @OneToMany(mappedBy = "applicant", fetch = FetchType.LAZY)
+    private List<JobApplication> applications;
+
+
 }

@@ -13,7 +13,7 @@ public interface JobService {
     JobResponseDTO       getById(int id);
     Page<JobResponseDTO> getAll(Pageable pageable);
     List<JobResponseDTO> search(String title, String location,
-                                JobType jobType, String experience);
+                                JobType jobType, String experience,Double minSalary,Double maxSakary);
     List<JobResponseDTO> getByCompanyId(int companyId);
     JobResponseDTO       update(int id, CreateJobDTO updateDTO);
     JobResponseDTO       toggleStatus(int id);

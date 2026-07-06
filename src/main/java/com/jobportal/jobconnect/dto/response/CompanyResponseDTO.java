@@ -17,5 +17,7 @@ public class CompanyResponseDTO {
     private String phone;
     private int employeeCount;
     private int recruiterId;
+    private String recruiterName;
+    private String recruiterEmail;
     private String createdAt;
 }

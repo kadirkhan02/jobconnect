@@ -10,28 +10,25 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "job_applications")
+@Table(name = "job_applications",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"job_id", "applicant_id"}))
+@ToString(exclude = {"job", "applicant"})
+@EqualsAndHashCode(exclude = {"job", "applicant"})
 public class JobApplication {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotNull(message = "Job id is required!")
-    @Min(value = 1, message = "Please provide a valid job id!")
-    @Column(nullable = false)
-    private int jobId;
-
-    @NotNull(message = "Applicant id is required!")
-    @Min(value = 1, message = "Please provide a valid applicant id!")
-    @Column(nullable = false)
-    private int applicantId;
+    // ❌ private int jobId;       → HATA DO
+    // ❌ private int applicantId; → HATA DO
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ApplicationStatus status = ApplicationStatus.APPLIED;
 
-    @Size(max = 1000, message = "Cover letter 1000 characters se zyada nahi!")
+    @Size(max = 1000, message = "Cover letter 1000 characters max!")
     @Column(columnDefinition = "TEXT")
     private String coverLetter;
 
@@ -39,5 +36,15 @@ public class JobApplication {
 
     @Column(updatable = false)
     private String appliedAt;
+
     private String updatedAt;
+
+    // Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_id", nullable = false)
+    private Job job;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "applicant_id", nullable = false)
+    private User applicant;
 }

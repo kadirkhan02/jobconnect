@@ -4,8 +4,12 @@ import com.jobportal.jobconnect.dto.request.CreateJobDTO;
 import com.jobportal.jobconnect.dto.response.JobResponseDTO;
 import com.jobportal.jobconnect.enums.JobType;
 import com.jobportal.jobconnect.exception.ResourceNotFoundException;
+import com.jobportal.jobconnect.model.Company;
 import com.jobportal.jobconnect.model.Job;
+import com.jobportal.jobconnect.model.User;
+import com.jobportal.jobconnect.repository.CompanyRepository;
 import com.jobportal.jobconnect.repository.JobRepository;
+import com.jobportal.jobconnect.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,42 +32,80 @@ public class JobServiceImpl implements JobService {
     @Autowired
     private JobRepository jobRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CompanyRepository companyRepository;
+
     //private List<Job> jobs = new ArrayList<>();
     private int nextId = 1;
 
+
+    private JobResponseDTO mapToDTO(Job job)
+    {
+        JobResponseDTO jobResponseDTO=modelMapper.map(job,JobResponseDTO.class);
+
+        if(job.getCompany()!=null)
+        {
+            jobResponseDTO.setCompanyId(job.getCompany().getId());
+            jobResponseDTO.setCompanyName(job.getCompany().getName());
+            jobResponseDTO.setCompanyCity(job.getCompany().getCity());
+        }
+        if(job.getPostedBy()!=null)
+        {
+            jobResponseDTO.setPostedById(job.getPostedBy().getId());
+            jobResponseDTO.setPostedByName(job.getPostedBy().getName());
+        }
+        return jobResponseDTO;
+    }
+
     @Override
     public JobResponseDTO create(CreateJobDTO requestDTO, int postedById) {
+
+        Company company=companyRepository.findById(requestDTO.getCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found", requestDTO.getCompanyId()));
+
+        User user=userRepository.findById(postedById)
+                .orElseThrow(()->new ResourceNotFoundException(
+                        "User",postedById
+                ));
+
         Job job = modelMapper.map(requestDTO, Job.class);
 
-        job.setPostedById(postedById);
+        job.setCompany(company);
+        job.setPostedBy(user);
         job.setActive(true);
         job.setCreatedAt(LocalDateTime.now().toString());
 
         Job savedjob =jobRepository.save(job);
         log.info("New job posted: {}", job.getTitle());
-        return modelMapper.map(savedjob, JobResponseDTO.class);
+
+        return mapToDTO(savedjob);
     }
 
     @Override
     public JobResponseDTO getById(int id) {
         Job job = findJobById(id);
-        return modelMapper.map(job, JobResponseDTO.class);
+        return mapToDTO(job);
     }
 
     @Override
     public Page<JobResponseDTO> getAll(Pageable pageable) {
         log.info("Fetching all active jobs");
         return jobRepository.findByActiveTrue(pageable)
-                .map(job->modelMapper.map(job,JobResponseDTO.class));
+                .map(this::mapToDTO);
     }
 
     @Override
     public List<JobResponseDTO> search(String title, String location,
-                                       JobType jobType, String experience) {
+                                       JobType jobType, String experience
+                                       ,Double minSalary,Double maxSalary) {
         log.info("Searching jobs - title: {}, location: {}, type: {}",
-                title, location, jobType);
-        return jobRepository.searchJobs(title, location, jobType, experience)
-                .stream().map(j->modelMapper.map(j,JobResponseDTO.class))
+                title, location, jobType,experience,minSalary,maxSalary);
+
+        return jobRepository.searchJobs(title, location, jobType, experience,minSalary,maxSalary)
+                .stream().map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +113,7 @@ public class JobServiceImpl implements JobService {
     public List<JobResponseDTO> getByCompanyId(int companyId) {
         return jobRepository.findByCompanyId(companyId)
                 .stream()
-                .map(j -> modelMapper.map(j, JobResponseDTO.class))
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -89,18 +131,16 @@ public class JobServiceImpl implements JobService {
         job.setSalaryMin(updateDTO.getSalaryMin());
         job.setSalaryMax(updateDTO.getSalaryMax());
 
-        Job updatedjob=jobRepository.save(job);
-        log.info("Job updated with id: {}", id);
-        return modelMapper.map(updatedjob, JobResponseDTO.class);
+
+        return mapToDTO(job);
     }
 
     @Override
     public JobResponseDTO toggleStatus(int id) {
         Job job = findJobById(id);
         job.setActive(!job.isActive());
-        Job updatedjob=jobRepository.save(job);
-        log.info("Job status toggled - id: {}, active: {}", id, job.isActive());
-        return modelMapper.map(updatedjob, JobResponseDTO.class);
+
+        return mapToDTO(job);
     }
 
     @Override

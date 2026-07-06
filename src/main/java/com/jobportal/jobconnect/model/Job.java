@@ -4,12 +4,18 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "jobs")
+
+@ToString(exclude = {"company", "postedBy", "applications"})
+@EqualsAndHashCode(exclude = {"company", "postedBy", "applications"})
+
 public class Job {
 
     @Id
@@ -44,13 +50,22 @@ public class Job {
     private double salaryMax;
 
     private String experience;
-    @Column(nullable = false)
-    private int companyId;
-    @Column(nullable = false)
-    private int postedById;
+
+
     @Column(nullable = false)
     private boolean active = true;
     @Column(nullable = false)
     private String createdAt;
     private String deadline;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="company_id",nullable = false)
+    private Company company;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="posted_by_id",nullable = false)
+    private User postedBy;
+
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    private List<JobApplication> applications;
 }

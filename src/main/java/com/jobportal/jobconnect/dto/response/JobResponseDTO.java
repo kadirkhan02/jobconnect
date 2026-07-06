@@ -17,9 +17,15 @@ public class JobResponseDTO {
     private double salaryMin;
     private double salaryMax;
     private String experience;
-    private int companyId;
-    private int postedById;
+
     private boolean active;
     private String createdAt;
     private String deadline;
+
+    private int companyId;
+    private String companyName;
+    private String companyCity;
+
+    private int postedById;
+    private String postedByName;
 }

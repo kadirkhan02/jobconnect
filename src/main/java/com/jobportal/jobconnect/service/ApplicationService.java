@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ApplicationService {
 
-    ApplicationResponseDTO       apply(CreateApplicationDTO requestDTO);
+    ApplicationResponseDTO       apply(CreateApplicationDTO requestDTO,int applicantID);
     ApplicationResponseDTO       getById(int id);
     List<ApplicationResponseDTO> getByJobId(int jobId);
     List<ApplicationResponseDTO> getByApplicantId(int applicantId);
