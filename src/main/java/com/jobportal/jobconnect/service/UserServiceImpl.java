@@ -48,7 +48,7 @@ public class UserServiceImpl implements  UserService{
         user.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
 
         user.setActive(true);
-        user.setCreatedAt(LocalDateTime.now().toString());
+       // user.setCreatedAt(LocalDateTime.now().toString());
 
         User saveduser=userRepository.save(user);
         log.info("New user registered: {}",saveduser.getEmail());

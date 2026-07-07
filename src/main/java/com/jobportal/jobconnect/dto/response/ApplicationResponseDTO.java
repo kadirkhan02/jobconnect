@@ -3,6 +3,8 @@ package com.jobportal.jobconnect.dto.response;
 import com.jobportal.jobconnect.enums.ApplicationStatus;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +20,7 @@ public class ApplicationResponseDTO {
     private ApplicationStatus status;
     private String coverLetter;
     private String resumeLink;
-    private String appliedAt;
-    private String updatedAt;
+    private LocalDateTime appliedAt;
+    private LocalDateTime updatedAt;
 
 }

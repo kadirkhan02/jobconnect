@@ -76,7 +76,7 @@ public class JobServiceImpl implements JobService {
         job.setCompany(company);
         job.setPostedBy(user);
         job.setActive(true);
-        job.setCreatedAt(LocalDateTime.now().toString());
+        //job.setCreatedAt(LocalDateTime.now().toString());
 
         Job savedjob =jobRepository.save(job);
         log.info("New job posted: {}", job.getTitle());

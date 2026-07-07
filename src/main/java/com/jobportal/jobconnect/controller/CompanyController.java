@@ -5,6 +5,8 @@ import com.jobportal.jobconnect.dto.request.CreateCompanyDTO;
 import com.jobportal.jobconnect.dto.response.CompanyResponseDTO;
 import com.jobportal.jobconnect.response.ApiResponse;
 import com.jobportal.jobconnect.service.CompanyService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Tag(name = "Company", description = "Company management APIs")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/companies")
@@ -20,7 +22,7 @@ public class CompanyController {
 
     @Autowired
     private CompanyService companyService;
-
+    @Operation(summary = "Create new company")
     @PostMapping
     public ResponseEntity<ApiResponse<CompanyResponseDTO>>create(
             @Valid @RequestBody CreateCompanyDTO requestDTO,
@@ -34,6 +36,7 @@ public class CompanyController {
                 .body(ApiResponse.created(companyResponseDTO,"Comapny created Successfully"));
 
     }
+    @Operation(summary = "Get all companies")
     @GetMapping
     public ResponseEntity<ApiResponse<List<CompanyResponseDTO>>> getAll() {
         log.info("Fetching all companies");
@@ -41,7 +44,7 @@ public class CompanyController {
         return ResponseEntity.ok(
                 ApiResponse.success(companies, companies.size() + " companies found!"));
     }
-
+    @Operation(summary = "Get company by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CompanyResponseDTO>> getById(
             @PathVariable int id
@@ -51,6 +54,7 @@ public class CompanyController {
     }
 
     // GET /api/v1/companies/search?name=&city=&industry= - Search companies
+    @Operation(summary = "Search companies by name, city, industry")
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<CompanyResponseDTO>>> search(
             @RequestParam(required = false) String name,
@@ -63,6 +67,7 @@ public class CompanyController {
     }
 
     // GET /api/v1/companies/recruiter/{recruiterId} - Companies by recruiter
+    @Operation(summary = "Get companies by recruiter")
     @GetMapping("/recruiter/{recruiterId}")
     public ResponseEntity<ApiResponse<List<CompanyResponseDTO>>> getByRecruiterId(
             @PathVariable int recruiterId) {
@@ -73,6 +78,7 @@ public class CompanyController {
     }
 
     // PUT /api/v1/companies/{id} - Update company
+    @Operation(summary = "Update company")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CompanyResponseDTO>> update(
             @PathVariable int id,
@@ -84,6 +90,7 @@ public class CompanyController {
     }
 
     // DELETE /api/v1/companies/{id} - Delete company
+    @Operation(summary = "Delete company")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable int id) {

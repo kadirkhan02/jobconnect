@@ -16,7 +16,7 @@ import java.util.List;
 @ToString(exclude = {"company", "postedBy", "applications"})
 @EqualsAndHashCode(exclude = {"company", "postedBy", "applications"})
 
-public class Job {
+public class Job extends BaseEnity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,8 +54,7 @@ public class Job {
 
     @Column(nullable = false)
     private boolean active = true;
-    @Column(nullable = false)
-    private String createdAt;
+
     private String deadline;
 
     @ManyToOne(fetch = FetchType.LAZY)

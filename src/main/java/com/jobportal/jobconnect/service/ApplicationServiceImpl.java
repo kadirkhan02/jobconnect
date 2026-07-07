@@ -52,8 +52,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         app.setJob(job);
         app.setApplicant(applicant);
         app.setStatus(ApplicationStatus.APPLIED);
-        app.setAppliedAt(LocalDateTime.now().toString());
-        app.setUpdatedAt(LocalDateTime.now().toString());
+       // app.setAppliedAt(LocalDateTime.now().toString());
+       // app.setUpdatedAt(LocalDateTime.now().toString());
 
         JobApplication saved = applicationRepository.save(app);
         log.info("Application submitted - jobId:{}, applicantId:{}",
@@ -86,7 +86,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                                                ApplicationStatus status) {
         JobApplication app = findById(id);
         app.setStatus(status);
-        app.setUpdatedAt(LocalDateTime.now().toString());
+       // app.setUpdatedAt(LocalDateTime.now().toString());
         return mapToDTO(applicationRepository.save(app));
     }
 

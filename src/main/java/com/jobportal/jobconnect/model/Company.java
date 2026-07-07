@@ -15,7 +15,7 @@ import java.util.List;
 @ToString(exclude = {"recruiter", "jobs"})
 @EqualsAndHashCode(exclude = {"recruiter", "jobs"})
 
-public class Company {
+public class Company extends BaseEnity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,8 +40,7 @@ public class Company {
     private String phone;
     private int employeeCount;
 
-    @Column(nullable = false)
-    private String createdAt;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id",nullable = false)

@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name= "users")
 @ToString(exclude = {"companies", "applications"})
 @EqualsAndHashCode(exclude = {"companies", "applications"})
-public class User {
+public class User extends BaseEnity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,8 +38,7 @@ public class User {
 
     @Pattern(regexp = "^[0-9]{10}",message = "required 10 numbers")
     private String Phone;
-    @Column(updatable = false)
-    private String CreatedAt;
+
 
     @NotNull(message = "Required")
     @Enumerated(EnumType.STRING)

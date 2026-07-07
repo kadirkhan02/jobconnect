@@ -6,6 +6,8 @@ import com.jobportal.jobconnect.dto.response.UserResponseDTO;
 import com.jobportal.jobconnect.model.User;
 import com.jobportal.jobconnect.response.ApiResponse;
 import com.jobportal.jobconnect.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import com.jobportal.jobconnect.dto.response.UserResponseDTO;
 
 import java.util.List;
 
+
+@Tag(name="User",description = "User management APIs")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/users")
@@ -23,6 +27,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
+    @Operation(summary = "Register new user",description = "Register as JOB_SEEKER or RECRUITER")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponseDTO>>register(@Valid @RequestBody
     RegisterRequestDTO requestDTO)
@@ -33,6 +39,7 @@ public class UserController {
         return ResponseEntity.status(201).body(ApiResponse.created(userResponseDTO,"Resgistration completed"));
     }
 
+    @Operation(summary = "Get all users")
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponseDTO>>>getAll()
     {
@@ -42,6 +49,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(userResponseDTOS,userResponseDTOS.size() + "User found|"));
     }
 
+    @Operation(summary = "Get user by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getById(@PathVariable int id)
     {
@@ -49,6 +57,7 @@ public class UserController {
         UserResponseDTO userResponseDTO=userService.getById(id);
         return ResponseEntity.ok(ApiResponse.success(userResponseDTO,"User found with id "+id));
     }
+    @Operation(summary = "Get user by email")
     @GetMapping("/email/{email}")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getByEmail(
             @PathVariable String email) {
@@ -56,6 +65,7 @@ public class UserController {
         return ResponseEntity.ok(
                 ApiResponse.success(userService.getByEmail(email), "User found!"));
     }
+    @Operation(summary = "Update user profile")
     @PutMapping("/{id}")
     public  ResponseEntity<ApiResponse<UserResponseDTO>> update(@PathVariable int id, @Valid @RequestBody UpdateUserDTO updateUserDTO)
     {
@@ -64,6 +74,7 @@ public class UserController {
         return  ResponseEntity.status(201).body(ApiResponse.success(userResponseDTO1,"Updated Successfully"));
     }
 
+    @Operation(summary = "Deactivate user")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable int id)
     {

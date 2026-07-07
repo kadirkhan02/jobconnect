@@ -15,14 +15,13 @@ import lombok.*;
                 columnNames = {"job_id", "applicant_id"}))
 @ToString(exclude = {"job", "applicant"})
 @EqualsAndHashCode(exclude = {"job", "applicant"})
-public class JobApplication {
+public class JobApplication extends BaseEnity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // ❌ private int jobId;       → HATA DO
-    // ❌ private int applicantId; → HATA DO
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -34,10 +33,9 @@ public class JobApplication {
 
     private String resumeLink;
 
-    @Column(updatable = false)
-    private String appliedAt;
 
-    private String updatedAt;
+
+
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)

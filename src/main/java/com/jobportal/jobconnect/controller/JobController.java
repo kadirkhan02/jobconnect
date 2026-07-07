@@ -5,6 +5,8 @@ import com.jobportal.jobconnect.dto.response.JobResponseDTO;
 import com.jobportal.jobconnect.enums.JobType;
 import com.jobportal.jobconnect.response.ApiResponse;
 import com.jobportal.jobconnect.service.JobService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Tag(name = "Job", description = "Job posting APIs")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/jobs")
@@ -26,6 +28,7 @@ public class JobController {
     private JobService jobService;
 
     // POST /api/v1/jobs?postedById=1 - Create new job
+    @Operation(summary = "Post new job")
     @PostMapping
     public ResponseEntity<ApiResponse<JobResponseDTO>> create(
             @Valid @RequestBody CreateJobDTO requestDTO,
@@ -37,6 +40,7 @@ public class JobController {
     }
 
     // GET /api/v1/jobs - Get all active jobs
+    @Operation(summary = "Get all active jobs with pagination")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<JobResponseDTO>>> getAll(
             @RequestParam(defaultValue = "0") int page,
@@ -57,6 +61,8 @@ public class JobController {
     }
 
     // GET /api/v1/jobs/{id} - Get job by id
+
+    @Operation(summary = "Get job by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<JobResponseDTO>> getById(
             @PathVariable int id) {
@@ -66,6 +72,7 @@ public class JobController {
     }
 
     // GET /api/v1/jobs/search?title=&location=&jobType=&experience=
+    @Operation(summary = "Search jobs with filters")
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<JobResponseDTO>>> search(
             @RequestParam(required = false) String title,
@@ -82,6 +89,7 @@ public class JobController {
     }
 
     // GET /api/v1/jobs/company/{companyId} - Jobs by company
+    @Operation(summary = "Get jobs by company")
     @GetMapping("/company/{companyId}")
     public ResponseEntity<ApiResponse<List<JobResponseDTO>>> getByCompany(
             @PathVariable int companyId) {
@@ -92,6 +100,7 @@ public class JobController {
     }
 
     // PUT /api/v1/jobs/{id} - Update job
+    @Operation(summary = "Update job")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<JobResponseDTO>> update(
             @PathVariable int id,
@@ -103,6 +112,7 @@ public class JobController {
     }
 
     // PATCH /api/v1/jobs/{id}/status - Toggle job active/inactive
+    @Operation(summary = "Toggle job active/inactive status")
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<JobResponseDTO>> toggleStatus(
             @PathVariable int id) {
@@ -113,6 +123,7 @@ public class JobController {
     }
 
     // DELETE /api/v1/jobs/{id} - Delete job
+    @Operation(summary = "Delete job")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable int id) {

@@ -2,6 +2,8 @@ package com.jobportal.jobconnect.dto.response;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,5 +21,6 @@ public class CompanyResponseDTO {
     private int recruiterId;
     private String recruiterName;
     private String recruiterEmail;
-    private String createdAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

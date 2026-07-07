@@ -54,7 +54,7 @@ public class CompanyServiceImpl implements CompanyService{
 
         Company company =modelMapper.map(requestDTO,Company.class);
         company.setRecruiter(recruiter);
-        company.setCreatedAt(LocalDateTime.now().toString());
+       // company.setCreatedAt(LocalDateTime.now().toString());
 
         Company savedcompany=companyRepository.save(company);
         log.info("Company is added with name {}",savedcompany.getName());

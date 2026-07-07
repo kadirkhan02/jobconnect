@@ -3,6 +3,8 @@ package com.jobportal.jobconnect.dto.response;
 import com.jobportal.jobconnect.enums.UserRole;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,5 +19,6 @@ public class UserResponseDTO {
     private String bio;
     private String skills;
     private boolean active;
-    private String createdAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
