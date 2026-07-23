@@ -16,15 +16,21 @@ import com.jobportal.jobconnect.service.RefreshTokenService;
 import com.jobportal.jobconnect.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
 
 
 @Tag(name="Auth" ,description = "Authentication APIs")
@@ -33,6 +39,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    @Value("${jwt.expiration}")
+    private int accessExpiration;
+    @Value("${jwt.refresh-expiration}")
+    private int refresehExpiration;
 
     private final UserService userService;
     private final AuthenticationManager authManager;
@@ -52,7 +63,7 @@ public class AuthController {
     }
     @Operation(summary = "Login and get JWT token")
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>>login(@Valid @RequestBody LoginRequestDTO loginRequestDTO)
+    public ResponseEntity<ApiResponse<AuthResponseDTO>>login(@Valid @RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response)
     {
         log.info("Login request: {}", loginRequestDTO.getEmail());
         Authentication auth =authManager.authenticate(
@@ -69,9 +80,13 @@ public class AuthController {
 
         RefreshToken refreshToken=refreshTokenService.createRefreshToken(userDetails.getId());
 
+
+
+        setAccessTokenCookie(response,token);
+        setRefreshTokenCookie(response,refreshToken.getToken());
         AuthResponseDTO responseDTO=new AuthResponseDTO(
-                token,
-                refreshToken.getToken(),
+                null,
+                null,
                 "Bearer",
                 userDetails.getId(),
                 userDetails.getName(),
@@ -85,12 +100,36 @@ public class AuthController {
 
 
     }
+
+    private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        Cookie cookie=new Cookie("refreshToken",refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/api/v1/auth/refresh");
+        cookie.setMaxAge(refresehExpiration/ 1000);
+        response.addCookie(cookie);
+    }
+
+    private void setAccessTokenCookie(HttpServletResponse response, String token) {
+        Cookie cookie=new Cookie("accessToken",token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(accessExpiration/ 1000);
+        response.addCookie(cookie);
+    }
+
     @Operation(summary = "Get new access token using refresh token")
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>>refresh(@Valid @RequestBody RefreshRequestDTO refreshRequestDTO)
+    public ResponseEntity<ApiResponse<String>>refresh(HttpServletRequest request,
+                                                               HttpServletResponse response)
     {
-        RefreshToken refreshToken=refreshTokenService.findByToken(refreshRequestDTO.getRefreshToken());
+        String refreshTokenvalue=getCookieValue(request,"refreshToken");
 
+        if(refreshTokenvalue ==null)
+            return ResponseEntity.status(401).body(ApiResponse.error("Refresh token not found",401));
+
+        RefreshToken refreshToken=refreshTokenService.findByToken(refreshTokenvalue);
 
         refreshTokenService.verifyExpiration(refreshToken);
 
@@ -98,29 +137,60 @@ public class AuthController {
 
         String newAccessToken=jwtUtils.generateToken(userDetails);
 
-        AuthResponseDTO responseDTO=new AuthResponseDTO(
-                newAccessToken,
-                refreshRequestDTO.getRefreshToken(),
-                "Bearer",
-                userDetails.getId(),
-                userDetails.getName(),
-                userDetails.getUsername(),
-                userDetails.getUser().getRole()
+        setAccessTokenCookie(response,newAccessToken);
 
-        );
         log.info("Token refreshed for: {}",
                 refreshToken.getUser().getEmail());
+
         return ResponseEntity.ok(
-                ApiResponse.success(responseDTO, "Token refreshed!"));
+                ApiResponse.success("Success!", "Token refreshed!"));
     }
+
+    private String getCookieValue(HttpServletRequest request, String refreshToken) {
+
+        if(request.getCookies()==null)
+            return null;
+        return Arrays.stream(request.getCookies())
+                .filter(c->c.getName().equals(refreshToken))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElseThrow(null);
+    }
+
     @Operation(summary = "Logout — invalidate refresh token")
     @PostMapping("/logout/{userId}")
-    public ResponseEntity<ApiResponse<Void>>logout(@PathVariable int userId)
+    public ResponseEntity<ApiResponse<Void>>logout( HttpServletRequest request,
+                                                    HttpServletResponse response)
     {
-        refreshTokenService.deleteByUser(userId);
-        log.info("User logged out: {}", userId);
+
+        String getTokenvalue=getCookieValue(request,"refreshToken");
+
+        if(getTokenvalue!=null)
+        {
+            try {
+                RefreshToken refreshToken = refreshTokenService.findByToken(getTokenvalue);
+                refreshTokenService.deleteByUser(refreshToken.getUser().getId());
+                log.info("User logged out: {}", refreshToken.getUser().getId());
+            }catch (Exception e)
+            {
+                log.warn("Refresh token not found during logout");
+            }
+        }
+        clearCookie(response, "accessToken");
+        clearCookie(response, "refreshToken");
+
+
         return ResponseEntity.ok(
                 ApiResponse.success(null, "Logged out successfully!"));
+    }
+
+    private void clearCookie(HttpServletResponse response, String name) {
+
+        Cookie cookie = new Cookie(name, null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
 }
